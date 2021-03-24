@@ -332,13 +332,17 @@ assets: {	// 文件名称: 内容
 },
 
 
-// -----------  WebpackOptionsApply -------------------
 
-1. EntryOptionPlugin 插件注册 entryOption 事件
-	1. SingleEntryPlugin 注册 make 事件
-		1. compilation.addEntry
-2. 触发 entryOption 事件
+// ----------------compilation.addEntry -------------------------
+1. 触发 compilation.hooks.addEntry
+2. this._addModuleChain
+3. callback()
 
-3. 返回 options
 
-// -------------- run -------------------------
+// -----------_addModuleChain------------
+1. 建立 NormalModuleFactory， NormalModule | 创建模块  （name , context, request）
+2. module.build 开始编译
+3. 把编译后的入口模块添加到 entries
+
+
+
