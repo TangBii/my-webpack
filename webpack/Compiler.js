@@ -13,6 +13,10 @@ class Compiler extends Tapable {
     this.hooks = {
       environment: new SyncHook([]),
       afterEnvironment: new SyncHook([]),
+      entryOption: new SyncBailHook(["context", "entry"]),
+      afterPlugins: new SyncHook(["compiler"]),
+      afterResolvers: new SyncHook(["compiler"]),
+      make: new AsyncParallelHook(["compilation"]),
     };
 
     this.context = context;

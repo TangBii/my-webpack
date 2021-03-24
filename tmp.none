@@ -331,14 +331,14 @@ assets: {	// 文件名称: 内容
 	'main.js': [CachedSource]
 },
 
-// ------------------
-compiler 过程: 
- 1. webpack.js => webpack 函数，options
-	- 创建 Compiler 实例， 参数为 options.context， 把 options 赋值给 compiler
-		- 继承 tapable， 设置多个钩子
-		- this.options = {}  this.context = context
-		- run(callback)
- 	- NodeEnvironmentPlugin, 参数为 compiler， 设置 inputFileSystem 和 outputFileSystem
-	- 执行所有插件
-	- 触发 environment 和 afterEnvironment 事件
-	- WebpackOptionsApply().process(options, compiler)
+
+// -----------  WebpackOptionsApply -------------------
+
+1. EntryOptionPlugin 插件注册 entryOption 事件
+	1. SingleEntryPlugin 注册 make 事件
+		1. compilation.addEntry
+2. 触发 entryOption 事件
+
+3. 返回 options
+
+// -------------- run -------------------------
