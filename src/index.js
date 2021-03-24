@@ -1,3 +1,3 @@
 const moduleStr = require('./module');
 
-console.log(`this is ${moudleStr}`);
+console.log(`this is ${moduleStr}`);

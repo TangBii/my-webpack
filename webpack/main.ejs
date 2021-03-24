@@ -81,23 +81,15 @@
   
   
    	// Load entry module and return exports
-   	return __webpack_require__(__webpack_require__.s = "./src/index.js");
+   	return __webpack_require__(__webpack_require__.s = "<%-entryId%>");
    })
   /************************************************************************/
    ({
-      
-        "./src/index.js":
+      <%for(let i = 0; i < modules.length; i++){%>
+        "<%-modules[i].moduleId%>":
         /*! no static exports found */
        (function(module, exports, __webpack_require__) {
-        const moduleStr = __webpack_require__("./src/module.js");
-
-console.log(`this is ${moduleStr}`);
+        <%-modules[i]._source%>
        }),
-      
-        "./src/module.js":
-        /*! no static exports found */
-       (function(module, exports, __webpack_require__) {
-        module.exports = 'ModuleX';
-       }),
-      
+      <%}%>
    });
