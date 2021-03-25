@@ -4,19 +4,21 @@ const WebpackOptionsApply = require('./WebpackOptionsApply');
 
 const webpack = (options, callback) => {
 
-  let compiler;
+  // 实例化一个 Compiler
   options.context = options.context || process.cwd();
-  compiler = new Compiler(options.context);
-  compiler.options = options;
+  const compiler = new Compiler(options);
 
   new NodeEnvironmentPlugin().apply(compiler);
 
+  // 加载所有插件
   if (options.plugins && Array.isArray(options.plugins)) {
     options.plugins.forEach(plugin => plugin.apply(compiler));
   }
 
-  compiler.hooks.environment.call();
+  // 触发多个钩子，此处以 afterEnvironment 为例
   compiler.hooks.afterEnvironment.call();
+
+  // 处理 options， 监听 make 事件
   compiler.options = new WebpackOptionsApply().process(options, compiler);
 
   return compiler;

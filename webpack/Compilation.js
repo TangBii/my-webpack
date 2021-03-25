@@ -41,10 +41,9 @@ class Compilation extends Tapable {
 
   addEntry(context, entry, name, callback) {
 
-    this.hooks.addEntry.call(entry, name);
-
     this._addModuleChain(context, entry, name);
 
+    // 通知 make 事件已完成
     callback();
   }
 
@@ -64,43 +63,39 @@ class Compilation extends Tapable {
     this.entries.push(module);
   }
 
-  buildDependencies(module, dependencies) {
-    module.dependencies = dependencies.map(data => {
-      const module = new NormalModule(data);
-      return module.build(this);
-    })
-  }
-
   seal(callback) {
-    this.hooks.seal.call();
-    this.hooks.beforeChunks.call();
-    for (const entryModule of this.entries) {
-      const chunk = new Chunk(entryModule);
-      this.chunks.push(chunk);
+
+    // 给 compilation 添加 chunk
+    for (const module of this.entries) {
+      // 初始化 chunk.name 和 chunk.entryModule
+      const chunk = new Chunk(module);
+
+      // 给 chunk 添加模块
       chunk.modules = this.modules.filter(module => module.name === chunk.name);
+      this.chunks.push(chunk);
     }
-    this.hooks.afterChunks.call();
+
     this.createChunkAssets();
+
+    // 执行 onCompiled()
     callback();
   }
 
   createChunkAssets() {
-    for(let i = 0; i < this.chunks.length; i++) {
-      const chunk = this.chunks[i];
-      chunk.files = [];
-      const file = chunk.name + '.js';
+    for(const chunk of this.chunks) {
+      // 给 chunk.files 赋值
+      const fileName = chunk.name + '.js';
+      chunk.files.push(fileName);
+
+      // 使用 chunk 属性动态填充 ejs 模板
       const source = mainRender({
         entryId: chunk.entryModule.moduleId,
         modules: chunk.modules,
       })
-      chunk.files.push(file);
-      this.emitAssets(file, source);
-    }
-  }
 
-  emitAssets(file, source) {
-    this.assets[file] = source;
-    this.files.push(file);
+      // 给 compilation 赋值相关属性
+      this.assets[fileName] = source;
+    }
   }
 }
 

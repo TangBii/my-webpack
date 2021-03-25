@@ -13,9 +13,8 @@ const Compilation = require("./Compilation");
 
 
 class Compiler extends Tapable {
-  constructor(context) {
+  constructor(options) {
     super();
-
     this.hooks = {
       environment: new SyncHook([]),
       afterEnvironment: new SyncHook([]),
@@ -33,18 +32,19 @@ class Compiler extends Tapable {
       emit: new AsyncParallelHook(["compilation"]),
       done: new AsyncSeriesHook(["stats"]),
     };
-
-    this.context = context;
-    this.options = {};
+    this.options = options;
+    this.context = options.context;
+    this.outputFileSystem = null;
+		this.inputFileSystem = null;
   }
 
   run(callback) {
     
-    // 编译完成的回调
+    // 编译完成发射资源的回调
     const onCompiled = (err, compilation) => {
       this.emitAssets(compilation, err => {
         const stats = new Stats(compilation);
-        this.hooks.done.callAsync(stats, err => callback());
+        callback(err, stats);
       })
     }
 
@@ -56,24 +56,19 @@ class Compiler extends Tapable {
   }
 
   compile(onCompiled) {
-    const params = {};
-    this.hooks.beforeCompile.callAsync(params, err => {
+    this.hooks.beforeCompile.callAsync({}, err => {
       
-      this.hooks.compile.call(params);
-
+      // 实例化 Compilation
       const compilation = new Compilation(this);
-      this.hooks.thisCompilation.call(compilation, params);
-      this.hooks.compilation.call(compilation, params);
 
+      // 触发make事件
       this.hooks.make.callAsync(compilation, err => {
 
-        // 编译完成
+        // 定义 make 执行结束的回调
         compilation.seal(err => {
 
-          // 通过模块生成代码块
+          // 定义 seal 执行结束的回调
           this.hooks.afterCompile.callAsync(compilation, err => {
-
-            // 写入文件系统
             onCompiled(null, compilation);
           });
         })
@@ -83,16 +78,21 @@ class Compiler extends Tapable {
 
   emitAssets(compilation, callback) {
     const emitFiles = err => {
+
+      // 写入文件系统
       const assets = compilation.assets;
       for (const file in assets) {
         const source = assets[file];
         const targetPath = path.posix.join(this.options.output.path, file);
         this.outputFileSystem.writeFileSync(targetPath, source);
       }
+
+      // 执行 emit 回调
       callback();
     }
 
     this.hooks.emit.callAsync(compilation, err => {
+      // 创建文件夹
       mkdirp(this.options.output.path, emitFiles);
     })
   }

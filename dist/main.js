@@ -91,7 +91,7 @@
        (function(module, exports, __webpack_require__) {
         const moduleStr = __webpack_require__("./src/module.js");
 
-console.log(`this is ${moduleStr}`);
+console.log(`this isxs ${moduleStr}`);
        }),
       
         "./src/module.js":
